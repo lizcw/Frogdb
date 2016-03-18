@@ -1,0 +1,49 @@
+extend layout
+block content
+    h1
+        | View Frog Details
+
+    
+    div.leftpanel
+        table#view-table.ui-responsive()
+            tbody
+                tr
+                    th Frog ID
+                    td=frog.frogid
+                tr
+                    th Tank #
+                    td=frog.tankid
+                tr
+                    th Gender
+                    td=frog.gender
+                tr
+                    th Species
+                    td=frog.species
+                tr
+                    th Condition
+                    td=frog.condition
+                tr
+                    th QEN
+                    td=frog.qen
+                tr
+                    th Location
+                    td.red=frog.location
+        a(class='button', href='/frogs/edit/' + frog._id) Edit
+    div.rightpanel
+        div#dorsal.thumb
+            p Dorsal Photo
+            a(href='#popupFrogd_' + frog.frogid, data-rel='popup', data-position-to='window', data-transition='fade')
+                img.popphoto(src='http://127.0.0.1:5984/frogdb/'+frog._id +'/dorsalimage', width=80, alt='#{frog.frogid}')
+            div(id='popupFrogd_' + frog.frogid, data-role='popup', data-overlay-theme='b', data-theme='b', data-corners='false')
+                a.ui-btn.ui-corner-all.ui-shadow.ui-btn-a.ui-icon-delete.ui-btn-icon-notext.ui-btn-right(href='#', data-rel='back') Close
+                img.popphoto(src='http://127.0.0.1:5984/frogdb/'+frog._id +'/dorsalimage', style='max-height:512px;', alt='Frog ID #{frog.frogid}')
+        div#ventral.thumb
+            p Ventral Photo            
+            a(href='#popupFrogv_' + frog.frogid, data-rel='popup', data-position-to='window', data-transition='fade')
+                img.popphoto(src='http://127.0.0.1:5984/frogdb/'+frog._id +'/ventralimage', width=80, alt='#{frog.frogid}')
+            div(id='popupFrogv_' + frog.frogid, data-role='popup', data-overlay-theme='b', data-theme='b', data-corners='false')
+                a.ui-btn.ui-corner-all.ui-shadow.ui-btn-a.ui-icon-delete.ui-btn-icon-notext.ui-btn-right(href='#', data-rel='back') Close
+                img.popphoto(src='http://127.0.0.1:5984/frogdb/'+frog._id +'/ventralimage', style='max-height:512px;', alt='Frog ID #{frog.frogid}')
+
+
+

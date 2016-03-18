@@ -1,0 +1,30 @@
+extends layout
+
+block content
+    .frontpage-container
+            h1 Welcome to #{title}
+        
+            p
+                | The QBI Frog database stores information of 
+                | the Quarantine Frog Colony housed at AIBN.  
+                | This includes information on identification, health, 
+                | oocyte harvests and tracking and disposal of all quarantine 
+                | material.
+            p
+                | The Frog database replaces currently handwritten data forms
+                | and manually generated reports.
+            p
+                a(class='button', href='/frogs') Browse Frogs
+
+block sidebar
+    .widget
+        h1 Login
+        div.loginbox
+            form#loginform(name="login", action="/login", method="post")
+                label(for='user') Username: 
+                    span *
+                input(id='user',type='text',value='',placeholder='',name='user')
+                label(for='password') Password: 
+                    span *
+                input(id='password',type='password',value='',placeholder='',name='password')
+                input(type='submit',value='Login',data-inline='true',data-transition='fade', data-theme='c')     

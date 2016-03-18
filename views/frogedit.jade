@@ -1,0 +1,83 @@
+extend layout
+block content
+    h1
+        | Edit frog details
+    if message
+        p= message
+    form#frog-edit.ui-responsive(action='/frogs/update', method='POST', enctype='multipart/form-data', data-ajax='false')  
+        fieldset(legend='Edit')
+        div.control-group  
+            label(for='frogid') Frog ID:
+            div.controls
+                input#frogid(type='text', name='frogid' value='#{frog.frogid}')
+        div.control-group  
+            label(for='tankid') Tank ID:
+            div.controls
+                input#tankid(type='number', pattern="[0-9]{1,2}" name='tankid' value='#{frog.tankid}')
+        div.control-group 
+            label(for='qen') QEN
+            div.controls
+                select#qen(name='qen', selected='#{frog.qen}')
+                    each qen,i in qenlist
+                        option(value='#{qen}') #{qen}
+        div.control-group
+            label(for='gender') Gender
+            div.controls
+              input#gender-1(type='radio', name='gender', value='female', checked=frog.gender=="female")
+              label(for='gender-1') Female
+              input#gender-2(type='radio', name='gender', value='male', checked=frog.gender=="male")
+              label(for='gender-2') Male
+        div.control-group
+            label(for='species') Species
+            div.controls
+                input#species-1(type='radio', name='species', value='X.borealis', checked=frog.species =='X.borealis')
+                label(for='species-1') X.borealis
+                input#species-2(type='radio', name='species', value='X.laevis', checked=frog.species =='X.laevis')
+                label(for='species-2') X.laevis
+        div.control-group 
+            label(for='aec') AEC
+            div.controls
+                input#aec(type='text',name='aec',value='#{frog.aec}')        
+        div.control-group 
+            label(for='location') Current Location
+            div.controls
+                select#location(name='location',selected='#{frog.location}')
+                    option(value='Stored in AIBN Animal House') Stored in AIBN Animal House
+                    option(value='Disposed of at AIBN Animal House') Disposed of at AIBN Animal House
+                    option(value='Disposed of at Otto Hirschfeld Animal House') Disposed of at Otto Hirschfeld Animal House
+                    option(value='Other') Other
+        div.control-group 
+            label(for='condition') Oocytes Condition
+            div.controls
+                input#condition(type='text', name='condition', data-clear-btn='true', value='#{frog.condition}')
+        div.control-group 
+            label(for='comments') General Remarks
+            div.controls
+                textarea#comments(cols='40', rows='3',name='comments').
+                    #{frog.comments}        
+        div.control-group
+            label(for='dorsalimage') Upload Dorsal Image
+            div.thumb
+                a(href='#popupFrogd_' + frog.frogid, data-rel='popup', data-position-to='window', data-transition='fade')
+                                img.popphoto(src='http://127.0.0.1:5984/frogdb/'+frog._id +'/dorsalimage', width=80, alt='#{frog.frogid}')
+                div(id='popupFrogd_' + frog.frogid, data-role='popup', data-overlay-theme='b', data-theme='b', data-corners='false')
+                                a.ui-btn.ui-corner-all.ui-shadow.ui-btn-a.ui-icon-delete.ui-btn-icon-notext.ui-btn-right(href='#', data-rel='back') Close
+                                img.popphoto(src='http://127.0.0.1:5984/frogdb/'+frog._id +'/dorsalimage', style='max-height:512px;', alt='Frog ID #{frog.frogid}')
+    
+            div.controls
+                input(id='dorsalimage' type='file', name='dorsalimage')
+        div.control-group
+            label(for='ventralimage') Upload Ventral Image
+            div.thumb
+                a(href='#popupFrogv_' + frog.frogid, data-rel='popup', data-position-to='window', data-transition='fade')
+                                img.popphoto(src='http://127.0.0.1:5984/frogdb/'+frog._id +'/ventralimage', width=80, alt='#{frog.frogid}')
+                div(id='popupFrogv_' + frog.frogid, data-role='popup', data-overlay-theme='b', data-theme='b', data-corners='false')
+                                a.ui-btn.ui-corner-all.ui-shadow.ui-btn-a.ui-icon-delete.ui-btn-icon-notext.ui-btn-right(href='#', data-rel='back') Close
+                                img.popphoto(src='http://127.0.0.1:5984/frogdb/'+frog._id +'/ventralimage', style='max-height:512px;', alt='Frog ID #{frog.frogid}')            
+            div.controls
+                input(id='ventralimage' type='file', name='ventralimage')
+        
+        input#id(type='hidden', value='#{frog._id}', name='id')
+        input#submit(type='submit', value='Save', class='btn btn-success')
+    
+    

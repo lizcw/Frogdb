@@ -1,0 +1,49 @@
+extend layout
+block content
+    p
+        | List of frogs
+
+    a(class='button', href='/frogs/create') Create New Frog  
+    input#filterTable-input(data-type='search')
+    table#movie-table.ui-responsive(
+        data-role='table', 
+        data-filter='true', 
+        data-input='#filterTable-input')    
+        thead
+            tr
+                th Frog ID
+                th Gender
+                th Species
+                th Condition
+                th QEN
+                th Actions
+        tbody
+            for frog in frogs
+                tr
+                    td
+                        div #{frog.frogid}
+                        div.thumb
+                            a(href='#popupFrog_' + frog.frogid, data-rel='popup', data-position-to='window', data-transition='fade')
+                                img.popphoto(src='http://127.0.0.1:5984/frogdb/'+frog._id +'/dorsalimage', width=80, alt='#{frog.frogid}')
+                            div(id='popupFrog_' + frog.frogid, data-role='popup', data-overlay-theme='b', data-theme='b', data-corners='false')
+                                a.ui-btn.ui-corner-all.ui-shadow.ui-btn-a.ui-icon-delete.ui-btn-icon-notext.ui-btn-right(href='#', data-rel='back') Close
+                                img.popphoto(src='http://127.0.0.1:5984/frogdb/'+frog._id +'/dorsalimage', style='max-height:512px;', alt='Frog ID #{frog.frogid}')
+                            
+                    td=frog.gender
+                    td=frog.species
+                    td=frog.condition
+                    td=frog.qen
+                    td 
+                        a.ui-btn.ui-corner-all.ui-shadow.ui-btn-inline.ui-icon-gear.ui-btn-icon-left.ui-btn-a(href='#popupMenu_'+ frog.frogid, data-rel='popup', data-transition='slideup') ...
+                        div(id='popupMenu_'+frog.frogid, data-role='popup', data-theme='b')
+                            ul(data-role='listview', data-inset='true', style='min-width:210px;')
+                                li(data-role='list-divider') Choose an action
+                                li
+                                  a(href='/frogs/view/#{frog._id}') View details
+                                li
+                                  a(href='/frogs/edit/#{frog._id}') Edit
+                                li
+                                  a(href='/frogs/delete/#{frog._id}') Delete
+    
+    
+    

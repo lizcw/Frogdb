@@ -1,0 +1,67 @@
+extend layout
+block content
+    p
+        | Welcome - Frogs 
+
+    
+    div#myGrid
+    script(type='text/javascript').     
+        $(document).ready(function () {
+            var keyValuesResult = !{frogs};
+            var dataSource = new kendo.data.DataSource({
+                pageSize: 6,                
+                autoSync: true,
+                data: keyValuesResult,
+                    schema: {
+                        model: {
+                            fields: {
+                                frogid: { type: "string" },
+                                species: { type: "string" },
+                                tankid:{ type: "string" },
+                                gender:{ type: "string" },
+                                current_location:{ type: "string" },
+                                _id:{type:"string"}
+                            }
+                        }
+                    }
+                });
+
+        <!-- Define the grid and attributes -->              
+        var element = $("#myGrid").kendoGrid({
+            dataSource:dataSource,
+                pageSize: 6,
+                serverPaging: true,
+                serverSorting: true,
+                databind:true,                                                   
+                height: 450,
+                sortable: true,
+                pageable: true,
+                selectable: true,
+                filterable: true,
+                resizable: true,
+                columns: [
+                    { field:"frogid",title:"Frog ID",attributes:{title:"ToolTip"}, width: 150 },
+                    { field:"species",title:"Species",width: 150 },
+                    { field:"tankid",title:"Tank",width: 100 },
+                    { field:"gender",title:"Gender",width: 100 },
+                    { field:"current_location",title:"Location",width: 50 },
+                    { field:"_id",title:"_id",width: 50}
+                    ],
+                });
+            });
+    
+    
+    
+    table#froglist
+        tr
+        th Frog ID
+        th Species
+        for frog in frogs
+            tr
+            td=frog.frogid
+            td=frog.species
+        
+
+block sidebar
+    .widget
+        h1 Menu

@@ -1,0 +1,19 @@
+extend layout
+block content
+    h1
+        | Upload frog images for Frog ID #{frog.frogid}
+    if message
+        p= message
+    
+    form(action="/frogs/upload", method="POST", enctype="multipart/form-data", data-ajax="false" )
+        input#id(type='hidden', value='#{frog._id}', name='id')        
+        div.control-group
+            label(for='dorsalimage') Upload Dorsal Image
+            div.controls
+                input(id='dorsalimage' type='file', name='dorsalimage')
+        div.control-group
+            label(for='ventralimage') Upload Ventral Image
+            div.controls
+                input(id='ventralimage' type='file', name='ventralimage')
+          input(id="submit" type="submit" value="Upload Images")
+   

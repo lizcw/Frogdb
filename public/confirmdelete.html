@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html>
+	<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<title>Dialog example - jQuery Mobile Demos</title>
+	<link rel="stylesheet" href="../css/themes/default/jquery.mobile-1.4.4.min.css">
+	<link rel="stylesheet" href="../_assets/css/jqm-demos.css">
+	<link rel="shortcut icon" href="../favicon.ico">
+	<script src="../js/jquery.js"></script>
+	<script src="../_assets/js/index.js"></script>
+	<script src="../js/jquery.mobile-1.4.4.min.js"></script>
+</head>
+<body>
+
+<div data-role="page" data-dialog="true">
+
+		<div data-role="header" data-theme="b">
+		<h1>Confirm</h1>
+		</div>
+
+		<div role="main" class="ui-content">
+		<h1>Delete item?</h1>
+		<p>This will remove the item from the database.</p>
+			<a href="/frogsdelete" data-rel="back" class="ui-btn ui-shadow ui-corner-all ui-btn-a">Confirm delete</a>
+			<a href="/frogs" data-rel="back" class="ui-btn ui-shadow ui-corner-all ui-btn-a">Cancel</a>
+		</div>
+	</div>
+
+</body>
+</html>

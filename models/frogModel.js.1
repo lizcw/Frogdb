@@ -1,0 +1,24 @@
+//Model for Frog CRUD
+var model = require('nodejs-model');
+
+//BASE
+var Frog = model("Frog").attr('frogid',{
+		validations:{
+			presence:{
+				message: 'Frog ID is required'
+			}
+		}
+}).attr('species',{
+	validations: {
+		length: {
+			minimum: 2,
+			maximum: 200,
+			messages: {
+				tooShort: 'Species name is too short',
+				tooLong: 'Species name is too long'
+			}
+		}
+	}
+});
+
+

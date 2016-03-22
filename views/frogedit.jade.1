@@ -4,7 +4,7 @@ block content
         | Edit frog details
     if message
         p= message
-    form#frog-edit.ui-responsive(action='/frogs/update', method='POST', enctype='multipart/form-data', data-ajax='false')  
+    form#frog-edit.ui-responsive(action='/frogs/upload',method='POST', enctype='multipart/form-data')  
         fieldset(legend='Edit')
         div.control-group  
             label(for='frogid') Frog ID:
@@ -57,40 +57,10 @@ block content
                     #{frog.comments}        
         div.control-group
             label(for='dorsalimage') Upload Dorsal Image
-            div.thumb
-                a(href='#popupFrogd_' + frog.frogid, data-rel='popup', data-position-to='window', data-transition='fade')
-                                img.popphoto(src='http://127.0.0.1:5984/frogdb/'+frog._id +'/dorsalimage', width=80, alt='#{frog.frogid}')
-                div(id='popupFrogd_' + frog.frogid, data-role='popup', data-overlay-theme='b', data-theme='b', data-corners='false')
-                                a.ui-btn.ui-corner-all.ui-shadow.ui-btn-a.ui-icon-delete.ui-btn-icon-notext.ui-btn-right(href='#', data-rel='back') Close
-                                img.popphoto(src='http://127.0.0.1:5984/frogdb/'+frog._id +'/dorsalimage', style='max-height:512px;', alt='Frog ID #{frog.frogid}')
-    
             div.controls
                 input(id='dorsalimage' type='file', name='dorsalimage')
-        div.control-group
-            label(for='ventralimage') Upload Ventral Image
-            div.thumb
-                a(href='#popupFrogv_' + frog.frogid, data-rel='popup', data-position-to='window', data-transition='fade')
-                                img.popphoto(src='http://127.0.0.1:5984/frogdb/'+frog._id +'/ventralimage', width=80, alt='#{frog.frogid}')
-                div(id='popupFrogv_' + frog.frogid, data-role='popup', data-overlay-theme='b', data-theme='b', data-corners='false')
-                                a.ui-btn.ui-corner-all.ui-shadow.ui-btn-a.ui-icon-delete.ui-btn-icon-notext.ui-btn-right(href='#', data-rel='back') Close
-                                img.popphoto(src='http://127.0.0.1:5984/frogdb/'+frog._id +'/ventralimage', style='max-height:512px;', alt='Frog ID #{frog.frogid}')            
-            div.controls
-                input(id='ventralimage' type='file', name='ventralimage')
         
         input#id(type='hidden', value='#{frog._id}', name='id')
-        input#submit(type='submit', value='Save', class='btn btn-success')
+        input(type='submit', value='Save', class='btn btn-success')
     
-block sidebar
-    .widget
-        h1 Menu
-        
-        a.ui-btn.ui-corner-all.ui-shadow.ui-btn-inline.ui-icon-gear.ui-btn-icon-left.ui-btn-a(href='#popupMenu', data-rel='popup', data-transition='slideup') ...
-        div(id='popupMenu', data-role='popup', data-theme='b')
-            ul(data-role='listview', data-inset='true', style='min-width:210px;')
-                li(data-role='list-divider') Choose an action
-                li
-                    a(href='/frogs') View All
-                li
-                    a(href='/frogs/view/#{frog._id}') View
-                li
-                    a(href='/frogs/delete/#{frog._id}') Delete    
+    

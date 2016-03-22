@@ -1,0 +1,57 @@
+doctype
+html
+  head
+    title #{title} - FrogDB
+    link(rel='stylesheet', href='/css/style.css')
+    meta(name='viewport', content='width=device-width, initial-scale=1')
+    link(rel='stylesheet', type='text/css', href='/css/jquery.mobile-1.4.5.min.css')
+
+    script(type='text/javascript', src='/js/jquery-1.7.1.min.js')
+    script(type='text/javascript', src='/js/jquery.mobile-1.4.5.min.js')
+    script(type='text/javascript', src='/js/jquery.JBreadCrumb.1.1.js')
+    script.
+        jQuery("#breadCrumb").jBreadCrumb({easing:'swing'});
+
+
+  body
+    header
+      h1 Welcome to QBI's FrogDB
+        .navbar.navbar-inverse.navbar-static-top(role='navigation')
+            .container
+            .navbar-header
+              button.navbar-toggle(type='button', data-toggle='collapse', data-target='.navbar-collapse')
+                span.sr-only Toggle navigation
+                span.icon-bar
+                span.icon-bar
+                span.icon-bar
+              a.navbar-brand(href='/') Project name
+            .collapse.navbar-collapse
+              ul.nav.navbar-nav
+                li.active
+                  a(href='/') Home
+                if user
+                  li
+                    a(href='/logout') Logout
+                else
+                  li
+                    a(href='/login') Login
+                  li
+                    a(href='/signup') Signup    
+        #breadCrumb.breadcrumbs
+
+    .container
+      if messages.error
+        .alert.alert-danger
+          div= messages.error
+      if messages.info
+        .alert.alert-info
+          div= messages.info
+      if messages.success
+        .alert.alert-success
+          div= messages.success
+      .main-content
+        block content
+      .sidebar
+        block sidebar
+    footer
+      p Copyright (c) 2016 Queensland Brain Institute

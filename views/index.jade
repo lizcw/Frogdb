@@ -1,5 +1,5 @@
 extends layout
-
+block breadcrumbs
 block content
     .frontpage-container
             h1 Welcome to #{title}
@@ -13,8 +13,15 @@ block content
             p
                 | The Frog database replaces currently handwritten data forms
                 | and manually generated reports.
-            p
-                a(class='button', href='/frogs') Browse Frogs
+            ul
+                li
+                    a(class='button', href='/frogs') Browse Frogs
+                li
+                    a(class='button', href='/shipments') Browse Shipments
+                li
+                    a(class='button', href='/operations') Browse Operations
+                li
+                    a(class='button', href='/transfers') Browse Transfers
 
 block sidebar
     .widget

@@ -1,0 +1,53 @@
+extend layout
+block content
+    h1
+        | View Shipment Details
+
+
+    div.leftpanel
+        table#view-table.ui-responsive()
+            tbody
+                tr
+                    th AQIS Permit ID
+                    td=shipment.aqis
+                tr
+                    th QEN
+                    td=shipment.qen
+                tr
+                    th Females
+                    td=shipment.females
+                tr
+                    th Males
+                    td=shipment.males
+                tr
+                    th Arrival Date
+                    td=shipment.arrivaldate
+                tr
+                    th Species
+                    td=shipment.species
+                tr
+                    th Supplier
+                    td=shipment.supplier
+                tr
+                    th Country
+                    td=shipment.country
+
+
+block sidebar
+    .widget
+        h1 Menu
+        table.sidemenu
+            tr
+                td
+                    a.ui-btn.ui-corner-all.ui-shadow.ui-btn-inline.ui-icon-gear.ui-btn-icon-left.ui-btn-a(href='#popupMenu', data-rel='popup', data-transition='slideup') ...
+                    div(id='popupMenu', data-role='popup', data-theme='b')
+                        ul(data-role='listview', data-inset='true', style='min-width:210px;')
+                            li(data-role='list-divider') Choose an action
+                            li
+                                a(href='/shipments') View All
+                            li
+                                a(href='/shipments/edit/#{shipment._id}') Edit
+                            li
+                                a(href='/shipments/delete/#{shipment._id}') Delete
+                            li
+                                a(href='/shipments/generate/#{shipment._id}') Generate Frogs

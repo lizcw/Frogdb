@@ -1,0 +1,54 @@
+extend layout
+block content
+    h1
+        | Edit shipment details
+    if message
+        p= message
+    form#shipment-edit.ui-responsive(action='/shipments/update', method='POST')  
+        fieldset(legend='Edit')
+        div.control-group  
+            label(for='aqis') AQIS Permit ID:
+            div.controls
+                input#aqis(type='text', name='aqis', value='#{shipment.aqis}')
+        div.control-group 
+            label(for='qen') QEN
+            div.controls
+                input#qen(name='qen', type='text', value='#{shipment.qen}')
+        div.control-group 
+            label(for='females') Number Female Frogs
+            div.controls
+                input#females(name='females', type='number', value='#{shipment.females}')
+        div.control-group 
+            label(for='males') Number Male Frogs
+            div.controls
+                input#males(name='males', type='number', value='#{shipment.males}')
+         div.control-group 
+            label(for='arrivaldate') Date of arrival/egg lay
+            div.controls
+                input#arrivaldate(name='arrivaldate', type='date', value='#{shipment.arrivaldate}')
+        div.control-group
+            label(for='species') Species
+            div.controls
+                input#species-1(type='radio', name='species', value='X.borealis',checked=shipment.species =='X.borealis')
+                label(for='species-1') X.borealis
+                input#species-2(type='radio', name='species', value='X.laevis', checked=shipment.species =='X.laevis')
+                label(for='species-2') X.laevis
+        div.control-group 
+            label(for='supplier') Supplier
+            div.controls
+                select#supplier(name='supplier')
+                    option(value='') -- Select Supplier --
+                    option(value='NASCO',selected=shipment.supplier=='NASCO') NASCO
+                    option(value='Xenopus One',selected=shipment.supplier=='Xenopus One') Xenopus One
+                    option(value='UQ', selected=shipment.supplier=='UQ') UQ
+        div.control-group 
+            label(for='country') Country of Origin
+            div.controls
+                select#country(name='country')
+                    option(value='') -- Select Country --
+                    option(value='USA',selected=shipment.country=='USA') USA
+                    option(value='Australia',selected=shipment.country=='Australia') Australia     
+        input#id(type='hidden', value='#{shipment._id}', name='id')
+        input(type='submit', value='Save', class='btn btn-success')
+    
+    

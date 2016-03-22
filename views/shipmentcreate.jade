@@ -1,0 +1,54 @@
+extend layout
+block content
+    h1
+        | Create new shipment details
+    if message
+        p= message
+    form#shipment-edit.ui-responsive(action='/shipments/create', method='POST')  
+        fieldset(legend='Create')
+        div.control-group  
+            label(for='aqis') AQIS Permit ID:
+            div.controls
+                input#aqis(type='text', name='aqis')
+        div.control-group 
+            label(for='qen') QEN
+            div.controls
+                input#qen(name='qen', type='text')
+        div.control-group 
+            label(for='females') Number Female Frogs
+            div.controls
+                input#females(name='females', type='number')
+        div.control-group 
+            label(for='males') Number Male Frogs
+            div.controls
+                input#males(name='males', type='number')
+         div.control-group 
+            label(for='arrivaldate') Date of arrival/egg lay
+            div.controls
+                input#arrivaldate(name='arrivaldate', type='date')
+        div.control-group
+            label(for='species') Species
+            div.controls
+                input#species-1(type='radio', name='species', value='X.borealis')
+                label(for='species-1') X.borealis
+                input#species-2(type='radio', name='species', value='X.laevis')
+                label(for='species-2') X.laevis
+        div.control-group 
+            label(for='supplier') Supplier
+            div.controls
+                select#supplier(name='supplier',selected='')
+                    option(value='') -- Select Supplier --
+                    option(value='NASCO') NASCO
+                    option(value='Xenopus One') Xenopus One
+                    option(value='UQ') UQ
+        div.control-group 
+            label(for='country') Country of Origin
+            div.controls
+                select#country(name='country', selected='')
+                    option(value='') -- Select Country --
+                    option(value='USA') USA
+                    option(value='Australia') Australia     
+
+        input(type='submit', value='Save', class='btn btn-success')
+    
+    

@@ -1,7 +1,8 @@
 var express = require('express')
   , router = express.Router()
-//  , Frog = require('../models/frogModel')
-
+  , Frog = require('../models/frogModel')
+//var validate = require('./nodejs-model').validate;
+//var isValid = require('./nodejs-model').isValid;
 var nano = require('nano')('http://localhost:5984');
 var db = nano.db.use('frogdb');
 var cdbmodel = require('couchdb-model');
@@ -14,13 +15,11 @@ var upload = multer({
 		dest: './uploads/',
 		limits: {fileSize: 1000000, files:2 }
 }); 
-
 /*set views
 https://github.com/sevcsik/node-couchdb-model
 */
 var model = cdbmodel(db);
-//Global breadcrumbs
-//var breadcrumbs = [{name:'Frogs',url:'/frogs'}];
+
 
 //Find by _id
 //Access to images??
@@ -44,15 +43,13 @@ router.get('/edit/:id', function(req, res, next) {
 			db.view('droplists','qens',{'group':true},function(err,body){
 				var qenlist = [];
 				if (!err){
-					//console.log('Body=',body);
+					console.log('Body=',body);
 					for(var i = 0; i < body.rows.length; i++){
 						var item = body.rows[i]
 						qenlist.push(item.key);
 					}
 					console.log('Qenlist=',qenlist);
-					res.render('frogedit', {
-						"frog": result, 
-						"qenlist" : qenlist});
+					res.render('frogedit', {"frog": result, "qenlist" : qenlist});
 				}
 			});
 
@@ -66,54 +63,28 @@ router.get('/view/:id', function(req,res,next) {
 			console.error('Failed to get the document');
 		else 
 			console.log(result); // result is an model instance
-			res.render('frogview', {
-				"frog": result});
+			res.render('frogview', {"frog": result});
 		});
 });
 
 //Delete Frog
 //TODO: Add popup confirm
 //TODO: REfresh list URL
-router.get('/delete/:id', function(req,res,next){
+router.get('/delete/:id', function(req,res){
 		console.log('Call to delete frogid');
 		model.findOneByID(req.params.id, function(error, result) {
-			if (!error){
+				if (!error){
 					console.log('Deleting frogid: ' + result.frogid);
 					result.delete(function(error) {
 						if (error) console.error('Failed to delete Frog  id');
 						else console.log('Frog deleted');
-						
+						res.redirect('/frogs');
 					});
 				}
-		});	
-		res.redirect('/frogs');
-});
-//TEMPORARY TO CLEAN UP AUTO-GENERATED FROGS - perhaps admin only?
-router.get('/bulkauto/delete', function(req,res,next){
-		var mylist = [];
-		db.view('ids','byAutoFrog',{},function(err,body){
-			if (!err){
-				//console.log('Body=',body);
-				for(var i = 0; i < body.rows.length; i++){
-					var item = body.rows[i]
-					mylist.push(item.key);
-					model.findOneByID(item.key, function(error, result) {
-						if (!error){
-								console.log('Deleting frogid: ' + result.frogid);
-								result.delete(function(error) {
-									if (error) console.error('Failed to delete Frog  id');
-									else console.log('Frog deleted');
-								});
-						}
-					});
-				}
-			}
-			
 		});
-		res.redirect('/frogs');
 });
-		
-		
+
+
 //Update frog details
 var cpUpload = upload.fields([{ name: 'dorsalimage', maxCount: 1 }, { name: 'ventralimage', maxCount: 1 }]);
 /* router.post('/upload', uploading.single('image'), function(req, res,next) {
@@ -150,7 +121,6 @@ router.post('/upload', cpUpload, function(req,res){
 				var frog = {
 					_id: result._id,
 					_rev: result._rev,
-					modeltype: 'frog',
 					frogid: result.frogid,
 					tankid: result.tankid,
 					qen: result.qen,
@@ -207,7 +177,6 @@ router.post('/update', cpUpload, function(req,res){
 			var frog = {
 					_id: req.body.id,
 					_rev: revid,
-					modeltype: 'frog',
 					frogid: req.body.frogid,
 					tankid: req.body.tankid,
 					qen: req.body.qen,
@@ -293,7 +262,18 @@ router.get('/create', function(req,res){
 });
 //save new frog details
 router.post('/create', function(req,res){
-		var frog = model.create({
+	var frog = Frog.create();
+	//getters are generated automatically 
+	frog.frogid(req.body.frogid);
+	frog.tankid(req.body.tankid);
+	frog.qen(req.body.qen);
+	frog.species(req.body.species);
+	frog.aec(req.body.aec);
+	frog.location(req.body.location);
+	frog.condition(req.body.condition);
+	frog.comments(req.body.comments);
+	console.log(frog.frogid());			
+/* 	var frog = model.create({
 				frogid: req.body.frogid,
 				modeltype: 'frog',
 				tankid: req.body.tankid,
@@ -304,27 +284,30 @@ router.post('/create', function(req,res){
 				location: req.body.location,
 				condition: req.body.condition,
 				comments: req.body.comments
-		}); 
-		//TODO NEED TO VALIDATE
-		frog.save(function(error){
-			if(!error){
-				console.log('frog created with id: ' + frog._id);
-				//redirect to image upload
-				res.redirect('/frogs/frogupload/' + frog._id);
-			} else {
-				console.error('frog create failed: ' + error);
-			}
-		});
+		}); */
+		//Invoke validations and wait for the validations to fulfill 
+		//frog.validate().then(function(){
+				
+		 // if frog.isValid {
+			 //validated, perform business logic 
+		//	 console.log("Validated:" + frog.toJSON());
+			var frogmodel = model.create(frog.toJSON('private'));
+			frogmodel.save(function(error){
+				if(!error){
+					console.log('frog created with id: ' + frog._id);
+					//redirect to image upload
+					res.redirect('/frogsfrogupload/' + frog._id);
+				} else {
+					console.error('frog create failed: ' + error);
+				}
+			});
+		//  } else {
+			 //validation failed, dump validation errors to the console 
+		//	 console.log(frog.errors)
+		//  }
+		//});
 });
-/*Bulk delete
-router.route('/bulkdelete')
-	.get(), function(req,res){
-		//TODO list all frogs with checkboxes in form
-	})
-	.post(), function(req,res){
-		//TODO delete checked frogs
-	});
-*/
+
 
 //Index froglist
 router.get('/', function(req,res){
@@ -338,12 +321,8 @@ router.get('/', function(req,res){
 				frogs.push(item.value);
 				console.log('info', 'Species=' + item.value.species);
 			}
-			err = null;
-			
-			res.render('frogstable', {
-				"frogs": frogs
-			});
-			
+			err = null
+			res.render('frogstable', {"frogs": frogs });
 		}
 		else
 			console.log('error',err);

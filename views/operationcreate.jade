@@ -1,0 +1,35 @@
+extend layout
+block content
+    h1
+        | Create new operation details
+    if message
+        p= message
+    form#operation-edit.ui-responsive(action='/operations/create', method='POST')
+        fieldset(legend='Create')
+        div.control-group
+            label(for='opnum') Operation Number:
+            div.controls
+                input#opnum(type='number', name='opnum', value='#{opnum}')
+        div.control-group
+            label(for='opdate') Operation Date:
+            div.controls
+                input#opdate(name='opdate', type='date',data-clear-btn="false" )
+        div.control-group
+            label(for='anesthetic') Anaesthetic
+            div.controls
+                input#anesthetic(name='anesthetic', type='text')
+        div.control-group
+            label(for='volume') Volume of Oocytes (ml)
+            div.controls
+                input#volume(name='volume', type='number')
+         div.control-group
+            label(for='comments') Comments
+            div.controls
+                input#comments(name='comments', type='text')
+        div.control-group
+            label(for='initials') Initials
+            div.controls
+                input#initials(name='initials', type='text')
+
+        input#id(type='hidden', value='#{frogid}', name='frogid')
+        input(type='submit', value='Save', class='btn btn-success')

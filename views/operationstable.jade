@@ -1,0 +1,51 @@
+extend layout
+block content
+    p
+        | List of operations
+
+    p.info=message
+    a(href='/operations/create/#{frog._id}') Add Operation
+    if (operations.length)
+        table#frogdetails.ui-responsive(data-role='table')
+            thead
+                tr
+                    th FrogID
+                    td=frog.frogid
+                    th Gender
+                    td=frog.gender
+                    th Species
+                    td=frog.species
+
+        table#ops-table.ui-responsive(data-role='table')
+            thead
+                tr
+                    th
+                    th Date
+                    th Anaesthetic
+                    th Volume
+                    th Comments
+                    th Initials
+                    th Actions
+            tbody
+                for operation in operations
+                    tr
+                        td=operation.operation_num
+                        td=operation.operation_date
+                        td=operation.anesthetic
+                        td=operation.volume
+                        td=operation.comments
+                        td=operation.initials
+
+                        td
+                            a.ui-btn.ui-corner-all.ui-shadow.ui-btn-inline.ui-icon-gear.ui-btn-icon-left.ui-btn-a(href='#popupMenu_'+ operation._id, data-rel='popup', data-transition='slideup') ...
+                            div(id='popupMenu_'+operation._id, data-role='popup', data-theme='b')
+                                ul(data-role='listview', data-inset='true', style='min-width:210px;')
+                                    li(data-role='list-divider') Choose an action
+                                    li
+                                      a(href='/operations/view/#{operation._id}') View details
+                                    li
+                                      a(href='/operations/edit/#{operation._id}') Edit
+                                    li
+                                      a(href='/operations/delete/#{operation._id}') Delete
+
+

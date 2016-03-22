@@ -1,0 +1,48 @@
+extend layout
+block content
+    p
+        | List of Shipments
+
+    p.info=message
+    a(class='button', href='/shipments/create') Create New Shipment
+    if (shipments.length)
+        input#filterTable-input(data-type='search')
+        table#movie-table.ui-responsive(
+            data-role='table',
+            data-filter='true',
+            data-input='#filterTable-input')
+            thead
+                tr
+                    th AQIS ID
+                    th QEN
+                    th Species
+                    th Females
+                    th Males
+                    th Arrival
+                    th Supplier
+                    th Country
+                    th Actions
+            tbody
+                for shipment in shipments
+                    tr
+                        td=shipment.aqis
+                        td=shipment.qen
+                        td=shipment.species
+                        td=shipment.females
+                        td=shipment.males
+                        td=shipment.arrivaldate
+                        td=shipment.supplier
+                        td=shipment.country
+                        td
+                            a.ui-btn.ui-corner-all.ui-shadow.ui-btn-inline.ui-icon-gear.ui-btn-icon-left.ui-btn-a(href='#popupMenu_'+ shipment._id, data-rel='popup', data-transition='slideup') ...
+                            div(id='popupMenu_'+shipment._id, data-role='popup', data-theme='b')
+                                ul(data-role='listview', data-inset='true', style='min-width:210px;')
+                                    li(data-role='list-divider') Choose an action
+                                    li
+                                      a(href='/shipments/view/#{shipment._id}') View details
+                                    li
+                                      a(href='/shipments/edit/#{shipment._id}') Edit
+                                    li
+                                      a(href='/shipments/delete/#{shipment._id}') Delete
+
+

@@ -140,7 +140,7 @@ header {
 }
 .leftpanel{
 	float:left;
-	width:45%;
+	/*width:45%;*/
 }
 .rightpanel{
 	float:right;
@@ -203,3 +203,7 @@ footer {
   padding-top: 5px;
   font-size: 13px;
 }
+.pagination-holder {
+    padding: 0 20px;
+    margin: 10px 0 20px 0;
+    margin-bottom: 20px;

@@ -8,6 +8,7 @@ var cdbmodel = require('couchdb-model');
 var fs = require('fs');
 var http = require('http');
 var Q = require('q');
+var paginate = require('couchdb-paginate');
 //upload files
 var multer  = require('multer');
 var upload = multer({ 
@@ -316,32 +317,126 @@ router.post('/create', function(req,res){
 			}
 		});
 });
-/*Bulk delete
-router.route('/bulkdelete')
-	.get(), function(req,res){
-		//TODO list all frogs with checkboxes in form
-	})
-	.post(), function(req,res){
-		//TODO delete checked frogs
-	});
-*/
+//Get frogs by shipment (not all have shipmentid)
+router.get('/byShipment/:shipmentid/:start/:prev', function(req,res,next){
+		var shipmentid = req.params.shipmentid;
+		console.log('View frogs by shipment:' , shipmentid);
+		var start= req.params.start;
+		var prev = req.params.prev;
+		var limit = 10;
+		var params={};
+		//NB Has to match view key [shipment, frogid, id]
+		if (prev <= 0){
+			params = {startkey: [shipmentid,0,start], limit: limit};
+		}else {
+			params = {endkey: [shipmentid,0,start], limit: limit}
+		}
+		db.view('ids','byShipment',params, function(err, body){
+			var frogs = [];
+			if (!err){
+				
+				//TODO REPLACE WITH CALLBACK
+				var rows = body.rows;
+				var total = body.total_rows * 1;
+				var offset = body.offset * 1;
+				var end = rows.length - 1;
+				var nexthref = rows[end].id;
+				var totalpages = Math.ceil(total/limit).toString();
+				var page = Math.ceil(offset/limit) + 1;
+				var hasprev = (page > 1);
+				var hasnext = (page < totalpages);
+				if (!hasnext) end = rows.length; //reset to full set at end of series
+				for(var i = 0; i < end; i++){
+					var item = rows[i];
+					frogs.push(item.value);
+					console.log('Loading Species=' + item.value.species);
+				}
+				var paginate ={
+					hrefPrev: '/frogs/byShipment/' + shipmentid + '/' + start + '/1',
+					hrefNext: '/frogs/byShipment/' + shipmentid + '/' + nexthref + '/0',
+					hasPrevious: hasprev,
+					hasNext: hasnext,
+					page: page,
+					totalpages: totalpages
+				};
+				res.render('frogstable', {
+					"frogs": frogs,
+					"paginate":paginate
+				});
+				
+			}
+		});
+});
+//Index froglist with pagination using couchdb-paginate - nOT WORKING
+/*router.get('/:start', paginate({
+	couchURI: 'http://localhost:5984',
+	database: 'frogdb',
+	design: 'ids',
+	view: 'paginateFrogs'}),function (req, res, next){
+		var totalrecs = req.documents.length;
+		console.log("total:", totalrecs);
+		
 
+});
+*/
 //Index froglist
-router.get('/', function(req,res){
+//format: frogs/<firstid>/0 (no previous)
+// frogs/<secondid>/1 (previous page)
+router.get('/:start/:prev', function (req, res, next){
+	var start= req.params.start;
+	var prev = req.params.prev;
+	console.log("Start="+ start);
+	var limit = 10;
+	var params={};
+	if (prev <= 0){
+		params = {startkey: start, limit: limit};
+	}else {
+		params = {endkey: start, limit: limit}
+	}
+	console.log("Params=" + params);
 	//Get list of frogs
-	db.view('ids','byFrogid', {}, function (err, body) {
-		var frogs = [];
+	db.view('ids','paginateFrogs', params, function (err, body) {
+		
 		if (!err){
 			var rows = body.rows;
-			for(var i = 0; i < body.rows.length; i++){
-				var item = body.rows[i]
-				frogs.push(item.value);
-				console.log('info', 'Species=' + item.value.species);
-			}
-			err = null;
+			var total = body.total_rows * 1;
+			console.log("totalrows=" + total);
+			var offset = body.offset * 1;
+			console.log("offset=" + offset);
+			var frogs = [];
 			
+			var end = rows.length - 1;
+			console.log("end=" + end);
+			var nexthref = rows[end].id;
+			
+			var totalpages = Math.ceil(total/limit).toString();
+			var page = Math.ceil(offset/limit) + 1;
+			var hasprev = (page > 1);
+			//if (hasprev) prev = 1;
+			var hasnext = (page < totalpages);
+			if (!hasnext) end = rows.length; //reset to full set at end of series
+			for(var i = 0; i < end; i++){
+				var item = rows[i];
+				frogs.push(item.value);
+				console.log('Loading Species=' + item.value.species);
+			}
+			var paginate ={
+				hrefPrev: '/frogs/' + start + '/1',
+				hrefNext: '/frogs/' + nexthref + '/0',
+				hasPrevious: hasprev,
+				hasNext: hasnext,
+				page: page,
+				totalpages: totalpages
+			};
+			console.log('Page='+ paginate.page);
+			console.log('Totalpages='+ paginate.totalpages);
+			console.log('hasPrevious='+ paginate.hasPrevious);
+			console.log('hasNext='+ paginate.hasNext);
+			console.log('hrefPrev='+ paginate.hrefPrev);
+			console.log('hrefNext='+ paginate.hrefNext);
 			res.render('frogstable', {
-				"frogs": frogs
+				"frogs": frogs,
+				"paginate":paginate
 			});
 			
 		}
@@ -351,4 +446,5 @@ router.get('/', function(req,res){
 	});
 
 });
+
 module.exports = router

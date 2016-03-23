@@ -32,6 +32,35 @@ block content
                     th Country
                     td=shipment.country
 
+        div
+            hr
+            h3 Generate Frogs for this shipment (optional)
+            form#generate(action='/shipments/generate', method="POST")
+                fieldset(legend='Generate Frogs')
+                div.control-group  
+                    label(for='prefix') Frog ID prefix (optional):
+                    div.controls
+                        input#prefix(type='text', name='prefix', value='')
+                div.control-group 
+                    label(for='startnum') Frog ID starting number:
+                    div.controls
+                        input#startnum(name='startnum', type='number', value=1)
+                div.control-group 
+                    label(for='tankid') Frog Tank ID (optional):
+                    div.controls
+                        input#tankid(name='tankid', type='number', value=0)
+                div.control-group 
+                    label(for='location') Current Location
+                    div.controls
+                        select#location(name='location',selected='Stored in AIBN Animal House')
+                            option(value='Stored in AIBN Animal House') Stored in AIBN Animal House
+                            option(value='Disposed of at AIBN Animal House') Disposed of at AIBN Animal House
+                            option(value='Disposed of at Otto Hirschfeld Animal House') Disposed of at Otto Hirschfeld Animal House
+                            option(value='Other') Other
+                    
+                input#id(type='hidden', value='#{shipment._id}', name='id')
+                input(type='submit', value='Generate Frogs', class='btn btn-success')
+
 
 block sidebar
     .widget
@@ -50,4 +79,5 @@ block sidebar
                             li
                                 a(href='/shipments/delete/#{shipment._id}') Delete
                             li
-                                a(href='/shipments/generate/#{shipment._id}') Generate Frogs
+                                a(href='/frogs/byShipment/#{shipment._id}/0/0') View Frogs
+                                

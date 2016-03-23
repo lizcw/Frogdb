@@ -108,34 +108,47 @@ router.get('/delete/:id', function(req,res){
 		});
 });
 //GENERATE Frogs from shipment record - ?BULK method required
-router.get('/generate/:id', function(req,res){
-		console.log('Generating new frog records from shipment='+ req.params.id);
-		model.findOneByID(req.params.id, function(error, result) {
+router.post('/generate', function(req,res,next){
+		var shipmentid = req.body.id;
+		var prefix = req.body.prefix;
+		var startnum = req.body.startnum * 1;
+		var tankid = req.body.tankid * 1;
+		var location = req.body.location;
+		
+		//Retrieve shipment details - check exists
+		model.findOneByID(shipmentid, function(error, result) {
+			
 			if (!error){
-				for(var i=0; i< result.females + result.males; i++){
+				var totalfrogs = (result.females * 1) + (result.males * 1);
+				console.log('Generating ' + totalfrogs + ' frog records from shipment='+ shipmentid);
+				for(var i=0; i< totalfrogs; i++){
 					var gender='male'
 					if (i < result.females)
 						gender='female';
+					var frogid = prefix + startnum.toString();
+					startnum++;
 					var frog = model.create({
-						frogid: 0,
+						frogid: frogid,
 						modeltype: 'frog',
-						tankid: 0,
+						tankid: tankid,
 						qen: result.qen,
 						gender: gender,
 						species: result.species,
 						aec: '',
-						location: '',
+						location: location,
 						condition: '',
-						comments: ''
+						comments: 'Auto-generated',
+						shipment: shipmentid
 					});
-					console.log(frog);
-					frog.save(function(error){
+					console.log(frog.frogid);
+					 frog.save(function(error){
 						if(!error){
-							console.log('Frog created with id: '+ frog._id);
+							console.log('Frog created with id: '+ frog.frogid);
 						}else{
 							console.error('Unable to create frog:' + error);
+							return error;
 						}
-					});
+					}); 
 				}
 				
 			}

@@ -37,14 +37,18 @@ block content
                         td=frog.qen
                         td
                             a.ui-btn.ui-corner-all.ui-shadow.ui-btn-inline.ui-icon-gear.ui-btn-icon-left.ui-btn-a(href='#popupMenu_'+ frog._id, data-rel='popup', data-transition='slideup') ...
-                            div(id='popupMenu_'+frog._id, data-role='popup', data-theme='b')
+                            div(id='popupMenu_'+frog._id, data-history='false', data-role='popup', data-theme='b')
                                 ul(data-role='listview', data-inset='true', style='min-width:210px;')
                                     li(data-role='list-divider') Choose an action
                                     li
                                       a(href='/frogs/view/#{frog._id}') View details
                                     li
                                       a(href='/frogs/edit/#{frog._id}') Edit
+                                    li
+                                      a(href='/frogs/delete/#{frog._id}') Delete
+
                             a(href='#confirmDelete' + frog._id, data-rel='popup', data-position-to='window', data-transition='fade') Delete
+                            <!-- Confirm delete dialog -->                            
                             div(data-role="popup", id="confirmDelete" + frog._id, data-overlay-theme="b", data-theme="b", data-dismissible="false", style="max-width:400px;")
                                 div(data-role="header", data-theme="c")
                                     h1 Delete Frog?
@@ -53,3 +57,4 @@ block content
                                         p
                                             a(href='#', class="ui-btn ui-corner-all ui-shadow ui-btn-inline ui-btn-a", data-rel="back") Cancel
                                             a(href='/frogs/delete/#{frog._id}', class="ui-btn ui-corner-all ui-shadow ui-btn-inline ui-btn-c", data-rel="page", data-transition="flow") Delete
+    include _paginate

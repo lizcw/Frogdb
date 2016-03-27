@@ -1,0 +1,57 @@
+extend layout
+block content
+	p
+		| The QBI Frog database stores information of 
+		| the Quarantine Frog Colony housed at AIBN.  
+		| This includes information on identification, health, 
+		| oocyte harvests and tracking and disposal of all quarantine 
+		| material.
+	p
+		| The Frog database replaces currently handwritten data forms
+		| and manually generated reports.
+	p
+		div(id=debug)
+	p
+		div(id=json)
+	p
+		div(id=result)
+	
+	form(action='http://localhost:5984/frogdb/_design/ids/_view/byId',method='GET')
+		div(data-role='fieldcontain')
+			fieldset(data-role='controlgroup')
+				label(for='frogid') Search by Frog ID: 
+				input(id='frogid',type='text',value='',name='frogid')
+		div(data-role='fieldcontain')   
+			input(type='submit',value='Go',data-transition='fade', data-theme='c')
+
+
+block sidebar
+	.widget
+		h1 Widget
+      
+script.
+	function doGet() { 
+	  $.ajax({
+		type: "GET",
+		url: "http://localhost:5984/frogdb/_design/ids/_view/byId",
+		dataType:"json",
+	  })
+	  .done(function(result) {
+		$('#json').html(JSON.stringify(result));
+		var resultHtml = '<table><tr><td><b>id</b></td>';
+		resultHtml += '<td><b>revision</b></td><td><b>frogid</b></td>';
+		resultHtml += '<td><b>species</b></td><td><b>tankid</b></td></tr>';
+		for(var i = 0; i < result.rows.length; i++)
+		{
+		  var item = result.rows[i]
+		  resultHtml += "<tr>";
+		  resultHtml += "<td>" + item.id + "</td>";
+		  resultHtml += "<td>" + item.value._rev + "</td>";
+		  resultHtml += "<td>" + item.value.frogid + "</td>";
+		  resultHtml += "<td>" + item.value.species + "</td>";
+		  resultHtml += "<td>" + item.value.tankid + "</td>";
+		  resultHtml += "</tr>";
+		}
+		$('#result').html(resultHtml);
+	});
+	}

@@ -38,7 +38,7 @@ block content
 
                         td
                             a.ui-btn.ui-corner-all.ui-shadow.ui-btn-inline.ui-icon-gear.ui-btn-icon-left.ui-btn-a(href='#popupMenu_'+ operation._id, data-rel='popup', data-transition='slideup') ...
-                            div(id='popupMenu_'+operation._id, data-role='popup', data-theme='b')
+                            div(id='popupMenu_'+operation._id, data-history='false', data-role='popup', data-theme='b')
                                 ul(data-role='listview', data-inset='true', style='min-width:210px;')
                                     li(data-role='list-divider') Choose an action
                                     li
@@ -47,5 +47,3 @@ block content
                                       a(href='/operations/edit/#{operation._id}') Edit
                                     li
                                       a(href='/operations/delete/#{operation._id}') Delete
-
-

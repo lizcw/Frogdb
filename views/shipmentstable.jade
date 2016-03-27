@@ -35,7 +35,7 @@ block content
                         td=shipment.country
                         td
                             a.ui-btn.ui-corner-all.ui-shadow.ui-btn-inline.ui-icon-gear.ui-btn-icon-left.ui-btn-a(href='#popupMenu_'+ shipment._id, data-rel='popup', data-transition='slideup') ...
-                            div(id='popupMenu_'+shipment._id, data-role='popup', data-theme='b')
+                            div(id='popupMenu_'+shipment._id, data-history='false', data-role='popup', data-theme='b')
                                 ul(data-role='listview', data-inset='true', style='min-width:210px;')
                                     li(data-role='list-divider') Choose an action
                                     li
@@ -44,5 +44,7 @@ block content
                                       a(href='/shipments/edit/#{shipment._id}') Edit
                                     li
                                       a(href='/shipments/delete/#{shipment._id}') Delete
+                                    li
+                                      a(href='/frogs/byShipment/#{shipment._id}/0/0') View Frogs
 
 

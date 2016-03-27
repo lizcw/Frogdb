@@ -1,6 +1,7 @@
 var express = require('express');
 var router = express.Router();
-
+var nano = require('nano')('http://localhost:5984');
+var db = nano.db.use('frogdb');
 // middleware that is specific to this router
 router.use(function timeLog(req, res, next) {
   console.log('Time: ', Date.now());
@@ -8,7 +9,17 @@ router.use(function timeLog(req, res, next) {
 });
 /* GET home page. */
 router.get('/', function(req, res, next) {
-  res.render('index', { title: 'Home' });
+  console.log('Home page');
+  db.view('ids','countfrogs', {}, function(err,result){
+  	 if (!err){
+  	 	 var numfrogs = 0;
+  	 	 if(result.rows && result.rows[0].value > 0){
+  	 	 	 numfrogs = result.rows[0].value;
+  	 	 }
+  	 	 console.log("DB has records= " + numfrogs);
+  	 	 res.render('index', { title: 'QBI Frog DB', numfrogs: numfrogs });
+  	 }
+  });
 });
 
 /* GET about page. */

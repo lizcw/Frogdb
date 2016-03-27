@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html>
+<head>
+<script src="//code.jquery.com/jquery-1.11.2.min.js"></script>
+<script src="//code.jquery.com/jquery-migrate-1.2.1.min.js"></script>
+</head>
+<body>
+
+<p>Hello Frog DB</p>
+<p>
+  <div id="debug"></div>
+</p>
+<p>
+  <div id="json"></div>
+</p>
+<p>
+  <div id="result"></div>
+</p>
+
+<button type="button" id="get" onclick="doGet()">Get</button><br/>
+<form>
+  FrogId: <input type="text" id="frogid"/>
+  Species: <input type="text" id="species"/>
+  Tank Number: <input type="text" id="tankid"/>
+  Current Location: <input type="text" id="current_location"/>
+  Gender: <input type="text" id="gender"/>
+  <button type="button" id="insert" 
+    onClick="doUpsert('insert')">Insert</button>
+  <button type="button" id="update" 
+    onClick="doUpsert('update')">Update</button>
+  <button type="button" id="remove" 
+    onClick="doRemove()">Remove</button>
+</form><br/>
+
+<script>
+
+function doGet() { 
+  $.ajax({
+    type: "GET",
+    url: 
+"http://localhost:5984/frogdb/_design/ids/_view/byId",
+    dataType:"json",
+  })
+  .done(function(result) {
+    $('#json').html(JSON.stringify(result));
+    var resultHtml = '<table><tr><td><b>id</b></td>';
+    resultHtml += '<td><b>revision</b></td><td><b>frogid</b></td>';
+    resultHtml += '<td><b>species</b></td><td><b>tankid</b></td></tr>';
+    for(var i = 0; i < result.rows.length; i++)
+    {
+      var item = result.rows[i]
+      resultHtml += "<tr>";
+      resultHtml += "<td>" + item.id + "</td>";
+      resultHtml += "<td>" + item.value._rev + "</td>";
+      resultHtml += "<td>" + item.value.frogid + "</td>";
+      resultHtml += "<td>" + item.value.species + "</td>";
+      resultHtml += "<td>" + item.value.tankid + "</td>";
+      resultHtml += "</tr>";
+    }
+    $('#result').html(resultHtml);
+});
+}
+</script>
+</html>

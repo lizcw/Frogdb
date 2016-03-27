@@ -6,15 +6,27 @@ var nano = require('nano')('http://localhost:5984');
 var db = nano.db.use('frogdb');
 var cdbmodel = require('couchdb-model');
 var model = cdbmodel(db);
-
+var MAXOPS = 6; //GLOBAL set in a config somewhere?
 //CREATE
 router.get('/create/:fid', function(req,res,next){
 		//Check Frog ID is valid
 		model.findOneByID(req.params.fid,function(error,result){
 			if (!error){
 				var frogid = req.params.fid;
-				var opnum = 2; //TODO Check next number for operation - if more than 6 then deny
-				res.render('operationcreate',{"frogid": frogid, "opnum": opnum});
+				db.view('operations','byFrogId',{key: frogid}, function(error,result){
+						if (!error)
+							//Check next number for operation - if more than 6 then deny
+							var opnum = result.length; 
+							console.log('Frog has operations=' + opnum);
+							if (opnum < MAXOPS){
+								opnum++;
+								res.render('operationcreate',{"frogid": frogid, "opnum": opnum});
+							} else {
+								error="Maximum operations for this frog";
+								console.error(error);
+								throw error;
+							}
+			});
 			}
 		});
 });

@@ -1,0 +1,15 @@
+if paginate.totalpages >= 1
+  div.pagination-holder#light-pagination
+    ul.pagination.light-theme.simple-pagination
+      if paginate.hasPrevious
+        li
+          a.page-link.prev(href=paginate.hrefPrev)
+            i.fa.fa-arrow-circle-left
+            |  Previous
+      li.active
+        span.current Page #{paginate.page} of #{paginate.totalpages}
+      if paginate.hasNext
+        li
+          a.page-link.next(href=paginate.hrefNext)
+            | Next&nbsp;
+            i.fa.fa-arrow-circle-right

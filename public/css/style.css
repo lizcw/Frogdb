@@ -122,6 +122,12 @@ header {
   border-bottom: 1px solid #df1806;
   text-shadow: 0px -1px 0px #df1806;
 }
+#navigation{
+	margin: 0 2px 5px 2px;
+	padding-bottom:10px;
+	clear:both;
+	border-right:1px;
+}
 .container {
   width: 700px;
   margin: 50px auto;
@@ -140,7 +146,7 @@ header {
 }
 .leftpanel{
 	float:left;
-	width:45%;
+	/*width:45%;*/
 }
 .rightpanel{
 	float:right;
@@ -203,3 +209,7 @@ footer {
   padding-top: 5px;
   font-size: 13px;
 }
+.pagination-holder {
+    padding: 0 20px;
+    margin: 10px 0 20px 0;
+    margin-bottom: 20px;

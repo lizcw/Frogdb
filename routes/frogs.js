@@ -7,14 +7,9 @@ var db = nano.db.use('frogdb');
 var cdbmodel = require('couchdb-model');
 var fs = require('fs');
 var http = require('http');
-<<<<<<< HEAD
 //var Q = require('q');
 var async = require("async");
 //var paginate = require('couchdb-paginate');
-=======
-var Q = require('q');
-var paginate = require('couchdb-paginate');
->>>>>>> origin/master
 //upload files
 var multer  = require('multer');
 var upload = multer({ 
@@ -346,7 +341,7 @@ router.post('/create', function(req,res){
 			}
 		});
 });
-<<<<<<< HEAD
+
 /* function getfrogsByShipment(req,res,next){
 	
 }
@@ -424,7 +419,7 @@ router.get('/byShipment/:shipmentid/:start/:prev', function(req,res){
 		console.log("total:", totalrecs);
 		
 
-=======
+
 //Get frogs by shipment (not all have shipmentid)
 router.get('/byShipment/:shipmentid/:start/:prev', function(req,res,next){
 		var shipmentid = req.params.shipmentid;
@@ -485,53 +480,34 @@ router.get('/byShipment/:shipmentid/:start/:prev', function(req,res,next){
 		console.log("total:", totalrecs);
 		
 
->>>>>>> origin/master
+
 });
 */
 //Index froglist
 //format: frogs/<firstid>/0 (no previous)
 // frogs/<secondid>/1 (previous page)
-<<<<<<< HEAD
+
 router.get('/:start/:prev', function (req, res){
 	var start= req.params.start;
 	var prev = req.params.prev;
 	var limit = 10; //GLOBAL CONFIG
-=======
-router.get('/:start/:prev', function (req, res, next){
-	var start= req.params.start;
-	var prev = req.params.prev;
-	console.log("Start="+ start);
-	var limit = 10;
->>>>>>> origin/master
 	var params={};
 	if (prev <= 0){
 		params = {startkey: start, limit: limit};
 	}else {
 		params = {endkey: start, limit: limit}
 	}
-<<<<<<< HEAD
 	var frogs = [];
 	//Get list of frogs
 	db.view('ids','paginateFrogs', params, function (err, body) {
 		console.log("Total=" + body.total_rows);
 		if (!err && body.total_rows > 0){
-=======
-	console.log("Params=" + params);
-	//Get list of frogs
-	db.view('ids','paginateFrogs', params, function (err, body) {
-		
-		if (!err){
->>>>>>> origin/master
+
 			var rows = body.rows;
 			var total = body.total_rows * 1;
 			console.log("totalrows=" + total);
 			var offset = body.offset * 1;
 			console.log("offset=" + offset);
-<<<<<<< HEAD
-			
-=======
-			var frogs = [];
->>>>>>> origin/master
 			
 			var end = rows.length - 1;
 			console.log("end=" + end);

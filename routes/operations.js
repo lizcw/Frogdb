@@ -16,7 +16,9 @@ router.get('/create/:fid', function(req,res,next){
 				db.view('operations','byFrogId',{key: frogid}, function(error,result){
 						if (!error)
 							//Check next number for operation - if more than 6 then deny
-							var opnum = result.length; 
+							var opnum = 1;
+							if (result && result.length > 0)
+								opnum = result.length; 
 							console.log('Frog has operations=' + opnum);
 							if (opnum < MAXOPS){
 								opnum++;
@@ -24,7 +26,7 @@ router.get('/create/:fid', function(req,res,next){
 							} else {
 								error="Maximum operations for this frog";
 								console.error(error);
-								throw error;
+								//throws error;
 							}
 			});
 			}
@@ -135,7 +137,8 @@ router.get('/:fid', function(req,res,next){
 			if (body.total_rows > 0){
 				var rows = body.rows;
 				for(var i = 0; i < rows.length; i++){
-						var item = rows[i]
+						var item = rows[i];
+						console.log("Item=" + item.value);
 						operations.push(item.value);
 				}
 				console.log('info', 'Num operations=' + operations.length);

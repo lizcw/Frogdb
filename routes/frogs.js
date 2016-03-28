@@ -1,10 +1,20 @@
 var express = require('express')
   , router = express.Router()
 //  , Frog = require('../models/frogModel')
-
 var nano = require('nano')('http://localhost:5984');
 var db = nano.db.use('frogdb');
 var cdbmodel = require('couchdb-model');
+var model = cdbmodel(db);
+
+/*//Specify update function
+db.update = function(obj, key, callback){
+ var db = this;
+ db.get(key, function (error, existing){ 
+    if(!error) obj._rev = existing._rev;
+    db.insert(obj, key, callback);
+ });
+}
+*/
 var fs = require('fs');
 var http = require('http');
 //var Q = require('q');
@@ -17,29 +27,13 @@ var upload = multer({
 		limits: {fileSize: 1000000, files:2 }
 }); 
 
-/*set views
-https://github.com/sevcsik/node-couchdb-model
-*/
-var model = cdbmodel(db);
-//Global breadcrumbs
-//var breadcrumbs = [{name:'Frogs',url:'/frogs'}];
 
-//Find by _id
-//Access to images??
-/*
-var dorsalimage = 'undefined';
-			db.attachment.get(result._id, 'dorsalimage', function(err, body) {
-				  if (!err) {
-					dorsalimage = body;
-				  }
-				});
-				*/
 router.get('/edit/:id', function(req, res, next) {
-	console.log('Getting frog id=' + req.params.id);
+	console.log('Edit frog id=' + req.params.id);
 	//Find frog
 	model.findOneByID(req.params.id, function(error, result) {
 		if (error) 
-			console.error('failed to get the document');
+			console.error('Find by ID failed:' + error);
 		else 
 			console.log(result); // result is an model instance
 			
@@ -65,7 +59,7 @@ router.get('/view/:id', function(req,res,next) {
 	console.log('View frog id=' + req.params.id);
 	model.findOneByID(req.params.id, function(error, result) {
 		if (error) 
-			console.error('Failed to get the document');
+			console.error('Find by ID failed:' + error);
 		else 
 			console.log(result); // result is an model instance
 			res.render('frogview', {

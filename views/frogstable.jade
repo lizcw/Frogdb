@@ -45,7 +45,7 @@ block content
                                     li
                                       a(href='/frogs/edit/#{frog._id}') Edit
                                     li
-                                      a(href='/frogs/delete/#{frog._id}') Delete
+                                      a(href='#confirmDelete' + frog._id , data-rel='popup') Delete
 
                             a(href='#confirmDelete' + frog._id, data-rel='popup', data-position-to='window', data-transition='fade') Delete
                             <!-- Confirm delete dialog -->                            

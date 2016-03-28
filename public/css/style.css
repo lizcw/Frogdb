@@ -152,13 +152,15 @@ header {
 	float:right;
 }
 #dorsal{
-	float:left;
+	max-width:200px;
+	padding:10px;
 }
 #ventral{
-	float:left;
+	max-width:200px;
+	padding:10px;
 }
 .sidebar {
-  float: left;
+  float: right;
   width: 200px;
 }
 .sidebar .widget {

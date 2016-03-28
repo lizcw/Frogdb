@@ -76,6 +76,15 @@ app.use(function(err, req, res, next) {
     error: {}
   });
 });
-
-
+// Add Nano etc
+//var nano = require('nano')('http://localhost:5984');
+//var db = nano.db.use('frogdb');
+//var cdbmodel = require('couchdb-model');
+//var model = cdbmodel(db);
+//set up views if first run
+/*set views
+https://github.com/sevcsik/node-couchdb-model
+*/
+//Global breadcrumbs
+//var breadcrumbs = [{name:'Frogs',url:'/frogs'}];
 module.exports = app;

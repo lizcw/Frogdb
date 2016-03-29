@@ -27,12 +27,13 @@ app.use(bodyParser.urlencoded({ extended: true }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
 //app.use(flash());
-
+app.use('/', routes);
+app.use('/users', users);
 app.use('/frogs', frogs);
 app.use('/shipments', shipments);
 app.use('/operations', operations);
-app.use('/', routes);
-app.use('/users', users);
+
+
 
 /*Additional routes - chained
 app.route('/book')

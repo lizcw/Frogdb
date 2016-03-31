@@ -1,0 +1,229 @@
+var express = require('express')
+  , router = express.Router()
+ // , Frog = require('../models/frogModel')
+
+var nano = require('nano')('http://localhost:5984');
+var db = nano.db.use('frogdb');
+var cdbmodel = require('couchdb-model');
+var model = cdbmodel(db);
+var MAXOPS = 6; //GLOBAL set in a config somewhere?
+//async
+var async = require("async");
+//var map = require("async/map");
+
+//CREATE
+router.get('/create/:fid', function(req,res,next){
+		//Check Frog ID is valid
+		model.findOneByID(req.params.fid,function(error,result){
+			if (!error){
+				var frogid = req.params.fid;
+				db.view('operations','byFrogId',{key: frogid}, function(error,result){
+						if (!error)
+							//Check next number for operation - if more than 6 then deny
+							var opnum = 0;
+							if (result && result.length > 0)
+								opnum = result.length; 
+							console.log('Frog has operations=' + opnum);
+							if (opnum < MAXOPS){
+								opnum++;
+								res.render('operationcreate',{"frogid": frogid, "opnum": opnum});
+							} else {
+								error="Maximum operations for this frog";
+								console.error(error);
+								//throws error;
+							}
+			});
+			}
+		});
+});
+//save new operation details
+router.post('/create', function(req,res){
+				
+	var operation = model.create({
+				operation_num: req.body.opnum,
+				operation_date: req.body.opdate,
+				anesthetic: req.body.anesthetic,
+				volume: req.body.volume,
+				comments: req.body.comments,
+				initials: req.body.initials,
+				frogid: req.body.frogid,
+				modeltype: 'operation'
+		});
+	
+		console.log(operation);
+		
+		operation.save(function(error){
+			if(!error){
+				console.log('operation created with id: ' + operation._id);
+				//redirect to image upload
+				//res.redirect('/operations/view/' + operation._id);
+				res.redirect('/operations/' + operation.frogid);
+			} else {
+				console.error('operation create failed: ' + error);
+			}
+		});
+		
+});
+//VIEW
+router.get('/view/:id', function(req,res,next) {
+	console.log('View operation id=' + req.params.id);
+	model.findOneByID(req.params.id, function(error, result) {
+		if (error) 
+			console.error('Failed to get the document');
+		else 
+			console.log(result); // result is an model instance
+			res.render('operationview', {"operation": result});
+		});
+});
+//EDIT
+router.get('/edit/:id', function(req, res, next) {
+	console.log('Getting operation id=' + req.params.id);
+	//Find operation
+	model.findOneByID(req.params.id, function(error, result) {
+		if (error) 
+			console.error('failed to get the document');
+		else 
+			console.log(result); // result is an model instance
+			res.render('operationedit', {"operation": result});
+		});
+});
+//callback
+router.post('/update', function(req,res){
+		console.log('Updating operation id=' + req.body.id);
+		model.findOneByID(req.body.id, function(error, result) {
+			var revid = result._rev;
+			console.log(result);
+			var operation = {
+				_rev: revid,
+				_id: req.body.id,
+				modeltype: 'operation',
+				operation_num: req.body.opnum,
+				operation_date: req.body.opdate,
+				anesthetic: req.body.anesthetic,
+				volume: req.body.volume,
+				comments: req.body.comments,
+				initials: req.body.initials,
+				frogid: req.body.frogid
+			};
+			
+			db.insert(operation, function(error) {
+				if (error) console.error('failed to save document');
+				else 
+					console.log('document saved with id: ' + operation._id);
+					res.redirect('/operations');
+			});
+		});
+});
+
+//DELETE
+//TODO: Add popup confirm
+//TODO: REfresh list URL
+router.get('/delete/:id', function(req,res){
+		console.log('Call to delete operationid');
+		model.findOneByID(req.params.id, function(error, result) {
+				if (!error){
+					console.log('Deleting operation id: ' + result._id);
+					result.delete(function(error) {
+						if (error) console.error('Failed to delete id');
+						else console.log(' deleted');
+						res.redirect('/operations');
+					});
+				}
+		});
+});
+
+//Index list
+router.get('/:fid', function(req,res,next){
+	db.view('operations','byFrogId', {key: req.params.fid}, function (err, body){
+		console.log('info',body);
+		if (!err){
+			var operations = [];
+			if (body.total_rows > 0){
+				var rows = body.rows;
+				for(var i = 0; i < rows.length; i++){
+						var item = rows[i];
+						console.log("Item=" + item.value);
+						operations.push(item.value);
+				}
+				console.log('info', 'Num operations=' + operations.length);
+				err = "Total operations: " + operations.length + " of 6";
+			} else {
+				err="No operations entered";
+			}
+			model.findOneByID(req.params.fid, function(error, result) {
+				if (!error){
+					console.log('Operations: frogid=' + result.frogid);
+					res.render('operationstable', {"operations": operations, "frog": result, "message" : err });
+				}
+			});
+		//return (err,operations);
+		}
+	});
+});
+//Operations report list
+function Opsummary(frogid, opdate, nextop,opnum){
+	var self = this;
+	var frog_id = frogid;
+	var lastop = opdate;
+	var nextop = nextop;
+	var opnum = opnum;
+	var getsummary = function(frog_id, callback){
+		model.findOneByID(frog_id, function(error, frog) {
+		var summary = {
+						frog_id: frog_id,
+						frognum: frog.frogid,
+						num_ops: lastopnum,
+						last_op: lastop,
+						next_op: nextop,
+						condition: frog.condition,
+						general: frog.comments,
+						tankid: frog.tankid
+					};
+				console.log('Summary=' + summary.frognum);
+				setTimeout(function(){
+						callback(null, summary);
+				},200);
+		});
+	};
+
+}
+//frogid,num_operations,last_op,nextop,condition,remarks,tankid
+router.get('/', function(req,res){
+    db.view('operations','bySummary',{descending:true},function(err, result,next){
+        if (!err){
+        	if (result.rows){
+        		console.log("rows=" + result.rows.length);
+        		//select only latest op per row
+        		var selectedrows = [];
+        		var today = new Date();
+        		var trackops = {};
+				for (var i=0; i < result.rows.length; i++){
+					var frog_id= result.rows[i].value.frogid;
+					var lastop =result.rows[i].value.operation_date;
+					var opnum=result.rows[i].value.operation_num;
+					console.log('Operations Summary: frogid=' + frog_id);
+					var nextop='';
+					if (!trackops[frog_id] || (trackops[frog_id] && opnum > trackops[frog_id])){
+						console.log('Loading op summary for=' + frog_id);
+						trackops[frog_id] = opnum;
+						var d2 = new Date(lastop);
+						nextop = new Date(d2.getTime() + (6*30*24*60*60)); //add six months
+						console.log('DEBUG: d2=' + d2.toString());
+						if (nextop.getTime() > today.getTime())
+							nextop = 'OK';
+						console.log('DEBUG: nextop=' + nextop);
+						var oprow = new Opsummary(frog_id,lastop,nextop,opnum);
+						selectedrows.push(oprow);
+					}
+				}
+        		//Using async - process each row
+        		async.map(selectedrows, Opsummary.getsummary, function(err, summaries){
+        			console.log("Summaries=" + summaries.length);
+        			res.render('operationssummary', {"summaries": summaries, "message" : err });
+        		});
+				
+			}
+		}
+	});
+});
+module.exports = router

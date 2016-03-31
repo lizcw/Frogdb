@@ -1,0 +1,27 @@
+extend layout
+block content
+    h1
+        | Death details for Frog ID #{frog.frogid}
+    if message
+        p= message
+    
+    form(action="/frogs/death/#{frog._id}", method="POST")
+        input#id(type='hidden', value='#{frog._id}', name='id')
+        div.control-group
+            label(for='death') Type of death
+            div.controls
+                input#death-1(type='radio', name='death', value='culled')
+                label(for='death-1') Culled
+                input#death-2(type='radio', name='death', value='found')
+                label(for='death-2') Found
+        div.control-group 
+            label(for='death_date') Date of death
+            div.controls
+                input#death_date(name='death_date', type='date')
+        div.control-group  
+            label(for='death_initials') Initials of person finding/culling:
+            div.controls
+                input#death_initials(type='text', pattern="[a-zA-Z]*" name='death_initials')
+        
+          input(id="submit" type="submit" value="Save")
+   

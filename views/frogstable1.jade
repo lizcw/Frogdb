@@ -1,0 +1,34 @@
+extend layout
+block content
+    p
+        | List of frogs
+
+    p.info=message
+    a(class='button', href='/frogs/create') Create New Frog
+    if(frogs.length)
+        
+        table#test-table.display
+                thead
+                    tr
+                        th Frog ID
+                        th Gender
+                        th Species
+                        th Condition
+                        th QEN
+                        th Actions
+        
+            
+        script.
+            $(document).ready(function() {
+                
+                $('#test-table').DataTable( {
+                    "ajax": frogs,
+                    "columns": [
+                        {"data": frogid},
+                        {"data": gender},
+                        {"data": species},
+                        {"data": condition},
+                        {"data": qen}
+                    ]
+                } );
+            } );

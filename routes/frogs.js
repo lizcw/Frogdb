@@ -1,33 +1,107 @@
 var express = require('express')
   , router = express.Router()
-//  , Frog = require('../models/frogModel')
+  , fs = require('fs')
+  , http = require('http')
+  , async = require('async')
+  , multer  = require('multer');
 var nano = require('nano')('http://localhost:5984');
 var db = nano.db.use('frogdb');
 var cdbmodel = require('couchdb-model');
 var model = cdbmodel(db);
+var util = require('util');
 
-/*//Specify update function
-db.update = function(obj, key, callback){
- var db = this;
- db.get(key, function (error, existing){ 
-    if(!error) obj._rev = existing._rev;
-    db.insert(obj, key, callback);
- });
-}
-*/
-var fs = require('fs');
-var http = require('http');
-//var Q = require('q');
-var async = require("async");
-//var paginate = require('couchdb-paginate');
-//upload files
-var multer  = require('multer');
+//upload files config
 var upload = multer({ 
 		dest: './uploads/',
 		limits: {fileSize: 1000000, files:2 }
 }); 
+//Datatables support
+//https://datatables.net/manual/installation
+//var $  = require( 'jquery' );
+//var dt = require( 'datatables.net' )();
+//**************************************************/
+//FUNCTIONS
+function getQens(req,res,next){
+	console.log('QENS list');
+	return function(cb){
+		var qenlist =[];
+		db.view('droplists','qens',{'group':true},function(err,body){
+			
+			if (!err){
+				
+				for(var i = 0; i < body.rows.length; i++){
+					var item = body.rows[i]
+					qenlist.push(item.key);
+				}
+				console.log('Qenlist=',qenlist);
+				req.qenlist = qenlist;
+				return next();
+				//return qenlist;
+			}
+		});
+	}
+}
+//Update function
+db.update = function(obj, key, callback) {
+ var db = this;
+ db.get(key, function (error, existing) { 
+  if(!error) obj._rev = existing._rev;
+  db.insert(obj, key, callback);
+ });
+}
 
-
+function loadFrogfields(result, callback){
+	//'modeltype','frogid','tankid','qen','gender', 'species','aec','location','condition','comments',
+	var fields =['shipment', 'death', 'death_date', 'death_initials', 'autoclave_date', 'autoclave_run', 'incinerate_date'];
+	var frog = {
+		_id: result._id,
+		_rev: result._rev,
+		modeltype: result.modeltype,
+		frogid: result.frogid,
+		tankid: result.tankid,
+		qen: result.qen,
+		gender: result.gender,
+		species: result.species,
+		aec: result.aec,
+		location: result.location,
+		condition: result.condition,
+		comments: result.comments
+	};
+	console.log('LOADED FROG1:' + frog);
+	for (var key in result){
+		//console.log('DEBUG: Check LOADING field=' + key);
+		if (fields.indexOf(key) > 0){
+			frog[key] = result[key];
+			console.log('DEBUG: LOADING field=' + key);
+		}
+	}
+	//attachments = result._attachments;
+	if (result._attachments){
+		console.log('LOADED attachments=' + result._attachments);
+		frog._attachments = result._attachments;
+	}
+	console.log('LOADED FROG2:' + frog.species);
+	callback(null, frog);
+}
+	
+//Get paginator
+function getpaginator(rootpath, prevhref, nexthref,offset,limit,total, callback){
+	var totalpages = Math.ceil(total/limit).toString();
+	var page = Math.ceil(offset/limit) + 1;
+	var hasprev = (page > 1);
+	var hasnext = (page < totalpages);
+	var paginator ={
+				hrefPrev: '/' + rootpath + '/' + prevhref + '/1',
+				hrefNext: '/' + rootpath + '/' + nexthref + '/0',
+				hasPrevious: hasprev,
+				hasNext: hasnext,
+				page: page,
+				totalpages: totalpages
+	};
+	callback(null,paginator);
+} 
+//**************************************************/
+//EDIT
 router.get('/edit/:id', function(req, res, next) {
 	console.log('Edit frog id=' + req.params.id);
 	//Find frog
@@ -55,6 +129,8 @@ router.get('/edit/:id', function(req, res, next) {
 	});
 
 });
+//**************************************************/
+//VIEW
 router.get('/view/:id', function(req,res,next) {
 	console.log('View frog id=' + req.params.id);
 	model.findOneByID(req.params.id, function(error, result) {
@@ -66,10 +142,8 @@ router.get('/view/:id', function(req,res,next) {
 				"frog": result});
 		});
 });
-
-//Delete Frog
-//TODO: Add popup confirm
-//TODO: REfresh list URL
+//**************************************************/
+//DELETE
 router.get('/delete/:id', function(req,res,next){
 		console.log('Call to delete frogid');
 		model.findOneByID(req.params.id, function(error, result) {
@@ -109,8 +183,8 @@ router.get('/bulkauto/delete', function(req,res,next){
 		res.redirect('/frogs');
 });
 		
-		
-//Update frog details
+//**************************************************/		
+//UPDATE
 var cpUpload = upload.fields([{ name: 'dorsalimage', maxCount: 1 }, { name: 'ventralimage', maxCount: 1 }]);
 /* router.post('/upload', uploading.single('image'), function(req, res,next) {
 		if (req.file){ //NB file not files! with single fn
@@ -199,109 +273,236 @@ router.post('/upload', cpUpload, function(req,res){
 //  { field: "foo", value: "bar" }, function(e,b) { console.log(b); }); 
 router.post('/update', cpUpload, function(req,res){
 		console.log('Updating frog id=' + req.body.id);
-		model.findOneByID(req.body.id, function(error, result) {
-			var revid = result._rev;
-			console.log('rev=' + revid);
-			//console.log(result);
-			var frog = {
-					_id: req.body.id,
-					_rev: revid,
-					modeltype: 'frog',
-					frogid: req.body.frogid,
-					tankid: req.body.tankid,
-					qen: req.body.qen,
-					gender: req.body.gender,
-					species: req.body.species,
-					aec: req.body.aec,
-					location: req.body.location,
-					condition: req.body.condition,
-					comments: req.body.comments
-			};
-			//If has shipment id
-			if (result.shipment)
-				frog.shipment= result.shipment;
-			if (result._attachments){
-				console.log('attachments=' + result._attachments);
-				frog._attachments = result._attachments;
-			}
+		var frogid = '';
+		var revid ='';
+		var attachments=[];
+		var frog = {};
+		var frogresult = {};
+		
+		async.series([
+			//Check Frog is valid
+			function(callback) {
+				model.findOneByID(req.body.id,function(error,result){
+					if (error) return callback(error);
+					frogid = result._id;
+					revid = result._rev;
+					frogresult = result;
+					callback();
+				});
+			},
+			//LOAD EXISTING DATA
+			function(callback){
+				loadFrogfields(frogresult, function(err,loadedfrog){
+					if (err) return callback(err);
+					console.log('LOADED:' + frog._id);
+					frog = loadedfrog;
+					callback();
+				});
+			},
+			//UPDATE FROM FORM
+			function(callback){
+				//Update FIELDS
+				frog.frogid= req.body.frogid;
+				frog.tankid= req.body.tankid;
+				frog.qen= req.body.qen;
+				frog.gender= req.body.gender;
+				frog.species= req.body.species;
+				frog.aec= req.body.aec;
+				frog.location= req.body.location;
+				frog.condition= req.body.condition;
+				frog.comments= req.body.comments;
 				
-			console.log(frog);
-			console.log(req.files);
-			if (typeof req.files == 'undefined'){
-				console.log('No files uploaded');
-				//Save other data
-				if (req.body){
+				//Add images if uploaded
+				if (typeof req.files == 'undefined'){
+					console.log('No files uploaded');
 					frogmodel = model.create(frog);
 					frogmodel.save(function(error){
-						if(!error){
-							console.log('frog updated with id: ' + frog._id);
-							res.redirect('/frogs/view/'+ frog._id);
-						} else {
-							console.error('frog update failed: ' + error);
-						}
+						if(error) 
+							console.log('ERROR: Update frog failed: ' + error);		
+						else
+							console.log('OK: Updated frog= ' + frog._id);
+					});
+					
+				}else{
+					//Preserve any previous images
+					if (req.files['dorsalimage']){
+						var myfile1 = req.files['dorsalimage'][0];
+						console.log('Dorsal Image file: ' + myfile1.path);
+						var attach1 = {
+							name: 'dorsalimage',
+							data: fs.readFileSync(myfile1.path),
+							content_type: myfile1.mimetype
+						};
+						attachments.push(attach1);
+					}
+					if (req.files['ventralimage']){
+						var myfile2 = req.files['ventralimage'][0];
+						console.log('Ventral Image file: ' + myfile2.path);
+						var attach2 = {
+							name: 'ventralimage',
+							data: fs.readFileSync(myfile2.path),
+							content_type: myfile2.mimetype
+						};
+						attachments.push(attach2);
+					}
+					console.log('DEBUG: Test Updated frog='); console.log(util.inspect(frog, false, null));
+					db.multipart.insert(frog, attachments, frog._id,  function(err){
+					  if (err)
+						console.log('Update failed: ' + err);
+					  else
+						console.log('Update succeeded');
+						
 					});
 				}
-			
-			} else {
-				var attachments = [];
-				//Preserve any previous images
-				if (req.files['dorsalimage']){
-					var myfile1 = req.files['dorsalimage'][0];
-					console.log('Dorsal Image file: ' + myfile1.path);
-					var attach1 = {
-						name: 'dorsalimage',
-						data: fs.readFileSync(myfile1.path),
-						content_type: myfile1.mimetype
-					};
-					attachments.push(attach1);
-				}
-				if (req.files['ventralimage']){
-					var myfile2 = req.files['ventralimage'][0];
-					console.log('Ventral Image file: ' + myfile2.path);
-					var attach2 = {
-						name: 'ventralimage',
-						data: fs.readFileSync(myfile2.path),
-						content_type: myfile2.mimetype
-					};
-					attachments.push(attach2);
-				}
-				
-				db.multipart.insert(frog, attachments, frog._id,  function(err){
-				  if (err)
-					console.log('Update failed: ' + err);
-				  else
-					console.log('Update succeeded');
-					res.redirect('/frogs/view/'+ frog._id);
-				});
+				callback();
 			}
-			
-		});
+		], function(result) {
+	  	   //res.render('frogview', {"frog" : frog});
+	  	   res.redirect('/frogs/view/' + frog._id);
+    	});
 });
-
-function getQens(req,res,next){
-	console.log('QENS list');
-	return function(cb){
-		var qenlist =[];
-		db.view('droplists','qens',{'group':true},function(err,body){
-			
-			if (!err){
-				
-				for(var i = 0; i < body.rows.length; i++){
-					var item = body.rows[i]
-					qenlist.push(item.key);
-				}
-				console.log('Qenlist=',qenlist);
-				req.qenlist = qenlist;
-				return next();
-				//return qenlist;
-			}
-		});
-	}
-}
+		
 	
+//ADD Death details
+router.route('/death/:fid')
+	.get(function(req,res){
+		console.log('Create death details for ' + req.params.fid);
+		var frog = '';
+		async.series([
+			//Check Frog is valid
+			function(callback) {
+				model.findOneByID(req.params.fid,function(error,result){
+					if (error) return callback(error);
+					frog = result; //save frog
+					callback();
+				});
+		}], function(result) {
+	  	  res.render('frogdeath', {"frog" : frog});
+    	});
+	})
+	.post(function(req,res){
+		console.log('Save death details for ' + req.params.fid);
+		var frog = {};
+		var frogresult ={};
+		var revid ='';
+		//var attachments='';
+		async.series([
+			//Check Frog is valid
+			function(callback) {
+				model.findOneByID(req.params.fid,function(error,result){
+					if (error) return callback(error);
+					frogresult = result; //save frog
+					revid = result._rev;
+					//attachments = result._attachments;
+					callback();
+				});
+			},
+			function(callback){
+				loadFrogfields(frogresult, function(err,loadedfrog){
+					if (err) return callback(err);
+					frog = loadedfrog;
+					console.log('LOADED:' + frog._id);
+					callback();
+				});
+			},
+			function(callback){
+				frog.death= req.body.death;
+				frog.death_date= req.body.death_date;
+				frog.death_initials= req.body.death_initials;
+				
+				console.log('Updated:' + frog._id);
+				callback();
+			},
+			function(callback){
+				var frogmodel = model.create(frog);
+				console.log('Frogmodel=' + frogmodel);
+				frogmodel.save(function(error){
+				//db.update(frog, frog._id, function(error){
+						if(error) 
+							console.log('ERROR: Adding Death details failed: ' + error);		
+						else
+							console.log('OK: Added death details to ' + frog._id);
+					});
+				callback();
+			}
+		], function(result) {
+	  	   res.redirect('/frogs/view/' + frog._id);
+    	});
+		
+	})
+	.put(function(req,res){
+		res.send('Death put');
+	});
 
-//New frog details
-router.get('/create', function(req,res){
+//ADD Disposal details
+router.route('/disposal/:fid')
+	.get(function(req,res){
+		console.log('Create disposal details for ' + req.params.fid);
+		var frog = '';
+		async.series([
+			//Check Frog is valid
+			function(callback) {
+				model.findOneByID(req.params.fid,function(error,result){
+					if (error) return callback(error);
+					frog = result; //save frog
+					callback();
+				});
+		}], function(result) {
+	  	  res.render('frogdisposal', {"frog" : frog});
+    	});
+				
+				
+	})
+	.post(function(req,res){
+		console.log('Save disposal details for ' + req.params.fid);
+		var frog = '';
+		async.series([
+			//Check Frog is valid
+			function(callback) {
+				model.findOneByID(req.params.fid,function(error,result){
+					if (error) return callback(error);
+					frog = result; //save frog
+					callback();
+				});
+			},
+			//Load new fields
+			function(callback){
+				var updatedfrog = frog;
+				console.log('Retrieved:' + frog);
+				updatedfrog.autoclave_date= req.body.autoclave_date;
+				updatedfrog.autoclave_run= req.body.autoclave_run;
+				updatedfrog.incineration_date= req.body.incineration_date;
+				frog = updatedfrog;
+				console.log('Updated:' + frog);
+				callback();
+			},
+			function(callback){
+				//TODO NEED TO VALIDATE
+				frog = model.create(frog); //use couchdbmodel
+				frog.save(function(error){
+					if(!error){
+						console.log('Disposal details created for frog id: ' + frog._id);
+					} else {
+						console.error('Disposal details failed: ' + error);
+					}
+				});
+				callback();
+			}
+		], function(result) {
+	  	   res.render('frogview', {"frog" : frog});
+    	});
+		
+	})
+	.put(function(req,res){
+		res.send('Disposal put');
+	});
+
+
+
+//**************************************************/
+//CREATE
+router.route('/create')
+	.get(function(req,res){
 	async.parallel({
 		qenlist: getQens()
 	  },
@@ -309,9 +510,8 @@ router.get('/create', function(req,res){
 	  	  res.render('frogcreate', {"qenlist" : result.qenlist});
     	});
 	
-});
-//save new frog details
-router.post('/create', function(req,res){
+    })
+	.post(function(req,res){
 		var frog = model.create({
 				frogid: req.body.frogid,
 				modeltype: 'frog',
@@ -334,15 +534,11 @@ router.post('/create', function(req,res){
 				console.error('frog create failed: ' + error);
 			}
 		});
-});
+	});
 
-/* function getfrogsByShipment(req,res,next){
-	
-}
-function paginatefrogs(req,res){
-} */
 
-	
+//***********************************************************/
+//LIST
 //Get frogs by shipment (not all have shipmentid)
 router.get('/byShipment/:shipmentid/:start/:prev', function(req,res){
 		var shipmentid = req.params.shipmentid;
@@ -403,6 +599,7 @@ router.get('/byShipment/:shipmentid/:start/:prev', function(req,res){
 			}
 		});
 });
+
 //Index froglist with pagination using couchdb-paginate - nOT WORKING
 /*router.get('/:start', paginate({
 	couchURI: 'http://localhost:5984',
@@ -411,75 +608,12 @@ router.get('/byShipment/:shipmentid/:start/:prev', function(req,res){
 	view: 'paginateFrogs'}),function (req, res, next){
 		var totalrecs = req.documents.length;
 		console.log("total:", totalrecs);
-		
-
-
-//Get frogs by shipment (not all have shipmentid)
-router.get('/byShipment/:shipmentid/:start/:prev', function(req,res,next){
-		var shipmentid = req.params.shipmentid;
-		console.log('View frogs by shipment:' , shipmentid);
-		var start= req.params.start;
-		var prev = req.params.prev;
-		var limit = 10;
-		var params={};
-		//NB Has to match view key [shipment, frogid, id]
-		if (prev <= 0){
-			params = {startkey: [shipmentid,0,start], limit: limit};
-		}else {
-			params = {endkey: [shipmentid,0,start], limit: limit}
-		}
-		db.view('ids','byShipment',params, function(err, body){
-			var frogs = [];
-			if (!err){
-				
-				//TODO REPLACE WITH CALLBACK
-				var rows = body.rows;
-				var total = body.total_rows * 1;
-				var offset = body.offset * 1;
-				var end = rows.length - 1;
-				var nexthref = rows[end].id;
-				var totalpages = Math.ceil(total/limit).toString();
-				var page = Math.ceil(offset/limit) + 1;
-				var hasprev = (page > 1);
-				var hasnext = (page < totalpages);
-				if (!hasnext) end = rows.length; //reset to full set at end of series
-				for(var i = 0; i < end; i++){
-					var item = rows[i];
-					frogs.push(item.value);
-					console.log('Loading Species=' + item.value.species);
-				}
-				var paginate ={
-					hrefPrev: '/frogs/byShipment/' + shipmentid + '/' + start + '/1',
-					hrefNext: '/frogs/byShipment/' + shipmentid + '/' + nexthref + '/0',
-					hasPrevious: hasprev,
-					hasNext: hasnext,
-					page: page,
-					totalpages: totalpages
-				};
-				res.render('frogstable', {
-					"frogs": frogs,
-					"paginate":paginate
-				});
-				
-			}
-		});
-});
-//Index froglist with pagination using couchdb-paginate - nOT WORKING
-/*router.get('/:start', paginate({
-	couchURI: 'http://localhost:5984',
-	database: 'frogdb',
-	design: 'ids',
-	view: 'paginateFrogs'}),function (req, res, next){
-		var totalrecs = req.documents.length;
-		console.log("total:", totalrecs);
-		
-
-
+	
 });
 */
 //Index froglist
-//format: frogs/<firstid>/0 (no previous)
-// frogs/<secondid>/1 (previous page)
+//format: frogs/<firstid>/0 (fwd)
+// frogs/<secondid>/1 (back)
 
 router.get('/:start/:prev', function (req, res){
 	var start= req.params.start;

@@ -1,0 +1,39 @@
+extend layout
+block content
+    p
+        | Summary of operations for Frog Species
+
+    p.info=message
+    if (summaries.length)
+        table#frogdetails.ui-responsive(data-role='table')
+            thead
+                tr
+                    th Frog No
+                    th No Ops
+                    th Last Op
+                    th Next Op
+                    th Oocyte/health condition
+                    th General
+                    th Tank
+                    th Actions
+            tbody
+                for summary in summaries
+                    tr
+                        td=summary.frognum
+                        td=summary.num_ops
+                        td=summary.last_op
+                        td=summary.next_op
+                        td=summary.condition
+                        td=summary.general
+                        td=summary.tankid
+                        td
+                            a.ui-btn.ui-corner-all.ui-shadow.ui-btn-inline.ui-icon-gear.ui-btn-icon-left.ui-btn-a(href='#popupMenu_'+ summary.frog_id, data-rel='popup', data-transition='slideup') ...
+                            div(id='popupMenu_'+summary.frog_id, data-history='false', data-role='popup', data-theme='b')
+                                ul(data-role='listview', data-inset='true', style='min-width:210px;')
+                                    li(data-role='list-divider') Choose an action
+                                    li
+                                      a(href='/operations/view/#{summary.frog_id}') View details
+                                    li
+                                      a(href='/operations/edit/#{summary.frog_id}') Edit
+                                    li
+                                      a(href='/operations/delete/#{summary.frog_id}') Delete

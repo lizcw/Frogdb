@@ -1,0 +1,22 @@
+extend layout
+block content
+    h1
+        | Disposal details for Frog ID #{frog.frogid}
+    if message
+        p= message
+
+    form(action="/frogs/disposal/#{frog._id}", method="POST")
+        input#id(type='hidden', value='#{frog._id}', name='id')
+        div.control-group
+            label(for='autoclave_date') Autoclave date
+            div.controls
+                input#autoclave_date(name='autoclave_date', type='date')
+        div.control-group
+            label(for='autoclave_run') Autoclave run number
+            div.controls
+                input#autoclave_run(type='number', name='autoclave_run')
+        div.control-group
+            label(for='incineration_date') Incineration date
+            div.controls
+                input#incineration_date(name='incineration_date', type='date')
+        input(id="submit" type="submit" value="Save")

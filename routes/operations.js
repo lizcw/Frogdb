@@ -11,30 +11,69 @@ var MAXOPS = 6; //GLOBAL set in a config somewhere?
 var async = require("async");
 //var map = require("async/map");
 //Date format function
-
-//CREATE
-router.get('/create/:fid', function(req,res,next){
-		//Check Frog ID is valid
-		model.findOneByID(req.params.fid,function(error,result){
-			if (!error){
-				var frogid = req.params.fid;
-				db.view('operations','byFrogId',{key: frogid}, function(error,result){
-						if (!error)
-							//Check next number for operation - if more than 6 then deny
-							var opnum = 0;
-							if (result && result.length > 0)
-								opnum = result.length; 
-							console.log('Frog has operations=' + opnum);
-							if (opnum < MAXOPS){
-								opnum++;
-								res.render('operationcreate',{"frogid": frogid, "opnum": opnum});
-							} else {
-								error="Maximum operations for this frog";
-								console.error(error);
-								//throws error;
-							}
-			});
+//FUNCTIONS
+function lastoperation(frog_id, callback){
+	var summary = {};
+	db.view('operations','byFrogId',{key: frog_id}, function(error,result){
+		if (error) callback(error,summary);
+		//should only return one
+		if (result.rows){
+			var opnum = 0;
+			var lastop ='';
+			for (var i = 0; i < result.rows.length; i++){
+				if (opnum < result.rows[i].value.operation_num){
+					opnum = result.rows[i].value.operation_num;
+					lastop = result.rows[i].value.operation_date; //should really check date also
+				}
 			}
+			console.log("Last op=" + lastop + " opnum=" + opnum);
+			summary = {
+				frog_id: frog_id,
+				num_ops: result.rows.length,
+				last_op: lastop
+			}
+			//console.log('DEBUG: summary=' + summary.num_ops);
+			callback(null,summary);
+		}
+	});
+	
+}
+//CREATE
+router.get('/create/:fid', function(req,res){
+		var frogid = '';
+		var opnum = 0;
+		var msg='';
+		async.series([
+			//Check Frog ID is valid
+			function(callback) {
+				model.findOneByID(req.params.fid,function(error,result){
+					if (error) return callback(error);
+					frogid = result._id;
+					callback();
+				});
+			},
+			function(callback) {
+				lastoperation(frogid, function(error,result){
+					if (error) return callback(error);
+					//Check next number for operation - if more than 6 then deny
+					console.log('DEBUG: Lastoperation: ' + result.num_ops);
+					opnum = result.num_ops; 
+					console.log('Frog has had ' + opnum + ' operations');
+					if (opnum < MAXOPS){
+						opnum++;
+						msg="Operation number " + opnum + " for this frog";
+					} else {
+						msg="Maximum operations for this frog";	//TODO: message without create form
+					}
+					console.info(msg);
+					callback();//IMPORTANT
+				}, callback);
+			}
+		], function (err, results){
+			//if (err) console.log(err);
+			console.log('DEBUG: final call to operationcreate');
+			
+			res.render('operationcreate',{"frogid": frogid, "opnum": opnum, "message": msg});
 		});
 });
 //save new operation details
@@ -125,7 +164,7 @@ router.get('/delete/:id', function(req,res){
 					result.delete(function(error) {
 						if (error) console.error('Failed to delete id');
 						else console.log(' deleted');
-						res.redirect('/operations' + req.body.frogid);
+						res.redirect('/operations/' + req.body.frogid);
 					});
 				}
 		});

@@ -46,6 +46,40 @@ block content
                 img.popphoto(src='http://127.0.0.1:5984/frogdb/'+frog._id +'/ventralimage', style='max-height:512px;', alt='Frog ID #{frog.frogid}')
 
 
+    div.details
+        h2
+            | Death Details
+        table#death-table.ui-responsive()
+            thead
+                tr
+                    th Death
+                    th Date
+                    th Initials
+            tbody                
+                tr
+                    td=frog.death
+                    td=frog.death_date
+                    td=frog.death_initials
+
+    div.details
+        h2
+            | Disposal Details
+        table#disposal-table.ui-responsive()
+            thead
+                tr
+                    th Disposal action
+                    th Date
+                    th Run #
+            tbody            
+                tr
+                    td Autoclaved
+                    td=frog.autoclave_date
+                    td=frog.autoclave_run
+                tr
+                    td Incinerated
+                    td=frog.incinerate_date
+                    td
+
 block sidebar
     .widget
         h1 Menu
@@ -61,4 +95,6 @@ block sidebar
                     li
                         a(href='/frogs/edit/#{frog._id}') Edit
                     li
-                        a(href='/frogs/delete/#{frog._id}') Delete
+                        a(href='/frogs/death/#{frog._id}') Death
+                    li
+                        a(href='/frogs/disposal/#{frog._id}') Disposal
